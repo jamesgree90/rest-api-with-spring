@@ -51,6 +51,7 @@ public class EventController {
 		}		
 		
 		Event event =	modelMapper.map(eventDto, Event.class);
+		event.update(); // biz logic --> Service class role 
 	    Event newEvent = this.eventRepository.save(event);
 		
 	//	event.setId(250);
