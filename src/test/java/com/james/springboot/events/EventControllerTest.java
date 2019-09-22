@@ -1,5 +1,6 @@
 package com.james.springboot.events;
 
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -13,10 +14,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -24,10 +27,13 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.james.springboot.common.RestDocsConfiguration;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest   // // @WebMvcTest
 @AutoConfigureMockMvc
+@AutoConfigureRestDocs
+@Import(RestDocsConfiguration.class)
 public class EventControllerTest {
 	@Autowired
 	MockMvc mockMvc; // No webserver required, not unit test DispatcherServlet is involved
@@ -77,7 +83,8 @@ public class EventControllerTest {
 			   .andExpect(jsonPath("eventStatus").value(EventStatus.DRAFT.name()))
 			   .andExpect(jsonPath("_links.self").exists())
 			   .andExpect(jsonPath("_links.query-events").exists())
-			   .andExpect(jsonPath("_links.update-event").exists())			   
+			   .andExpect(jsonPath("_links.update-event").exists())	
+			   .andDo(document("create-event"))
 			   ;  // response code = 201
 	}
 	
