@@ -1,6 +1,15 @@
 package com.james.springboot.events;
 
+import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
+import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
+import static org.springframework.restdocs.headers.HeaderDocumentation.responseHeaders;
+import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
+import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.relaxedResponseFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -84,7 +93,56 @@ public class EventControllerTest {
 			   .andExpect(jsonPath("_links.self").exists())
 			   .andExpect(jsonPath("_links.query-events").exists())
 			   .andExpect(jsonPath("_links.update-event").exists())	
-			   .andDo(document("create-event"))
+			   .andDo(document("create-event",
+					   links(
+						 linkWithRel("self").description("link to self"),
+						 linkWithRel("query-events").description("link to query events"),
+						 linkWithRel("update-event").description("link to update-event"),
+						 linkWithRel("profile").description("link to profile")
+					   ),
+					   requestHeaders(
+							   headerWithName(HttpHeaders.ACCEPT).description("accept-header"),
+							   headerWithName(HttpHeaders.CONTENT_TYPE).description("content-type")
+					   ),
+					   requestFields(
+							   fieldWithPath("name").description("Name of new Event"),
+							   fieldWithPath("description").description("Description of new Event"),
+							   fieldWithPath("beginEnrollmentDateTime").description("data time of begin Enrollment"),
+							   fieldWithPath("closeEnrollmentDateTime").description("data time of close Enrollment"),
+							   fieldWithPath("endEventDateTime").description("data time of Event end"),
+							   fieldWithPath("beginEventDateTime").description("data time of Event begin"),
+							   fieldWithPath("location").description(" event location address"),
+							   fieldWithPath("basePrice").description("base price of event"),
+							   fieldWithPath("maxPrice").description("max price of event"),
+							   fieldWithPath("limitOfEnrollment").description("limit of  Enrollment")
+					   ),
+					   responseFields( //  responseFields( -> strict 
+							   fieldWithPath("id").description(" Event id"),							   
+							   fieldWithPath("name").description("Name of new Event"),
+							   fieldWithPath("description").description("Description of new Event"),
+							   fieldWithPath("beginEnrollmentDateTime").description("data time of begin Enrollment"),
+							   fieldWithPath("closeEnrollmentDateTime").description("data time of close Enrollment"),
+							   fieldWithPath("endEventDateTime").description("data time of Event end"),
+							   fieldWithPath("beginEventDateTime").description("data time of Event begin"),
+							   fieldWithPath("location").description(" event location address"),
+							   fieldWithPath("basePrice").description("base price of event"),
+							   fieldWithPath("maxPrice").description("max price of event"),
+							   fieldWithPath("limitOfEnrollment").description("limit of  Enrollment"),
+							   fieldWithPath("free").description(" check event is free"),
+							   fieldWithPath("offline").description(" check event is offline"),
+							   fieldWithPath("eventStatus").description(" status of event"),							   
+							   fieldWithPath("_links.self.href").description(" self link "),
+							   fieldWithPath("_links.query-events.href").description(" query-events link"), 
+							   fieldWithPath("_links.update-event.href").description(" update-event link"), 			   
+							   fieldWithPath("_links.profile.href").description(" profile link") 				   
+					   ),
+					   responseHeaders(
+							   headerWithName(HttpHeaders.LOCATION).description("Location header"),
+							   headerWithName(HttpHeaders.CONTENT_TYPE).description("Content type")
+					   )
+					   
+					   
+					   ))
 			   ;  // response code = 201
 	}
 	
