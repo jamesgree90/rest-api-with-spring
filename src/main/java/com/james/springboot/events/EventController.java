@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.james.springboot.events.common.ErrorsResource;
+
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
@@ -43,13 +45,13 @@ public class EventController {
 		
 		if(errors.hasErrors()) {
 		//	return ResponseEntity.badRequest().build();
-			return ResponseEntity.badRequest().body(errors);
+			return ResponseEntity.badRequest().body(new ErrorsResource(errors));
 		}
 		
 		this.eventValidator.validate(eventDto, errors);
 		
 		if(errors.hasErrors()) {
-			return ResponseEntity.badRequest().body(errors);
+			return ResponseEntity.badRequest().body(new ErrorsResource(errors));
 		}		
 		
 		Event event =	modelMapper.map(eventDto, Event.class);
