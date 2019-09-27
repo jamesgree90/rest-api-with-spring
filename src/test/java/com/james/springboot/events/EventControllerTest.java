@@ -7,9 +7,9 @@ import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.li
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
-import static org.springframework.restdocs.payload.PayloadDocumentation.relaxedResponseFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -17,17 +17,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.LocalDateTime;
+import java.util.stream.IntStream;
 
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
@@ -54,6 +52,8 @@ public class EventControllerTest {
 	
 //	@MockBean
 //	EventRepository eventRepository; // this returns always null 
+	@Autowired
+	EventRepository eventRepository;
 	
 	@Test
 	public void createEvent() throws Exception {
@@ -239,5 +239,34 @@ public class EventControllerTest {
 				;
 	}	
 	
+	@Test
+	public void queryEvents() throws Exception {
+		
+		IntStream.range(0,30).forEach(this::generateEvent);
+		
+		this.mockMvc.perform(get("/api/events")
+				.param("page", "1")
+				.param("size", "10")
+				.param("sort", "name,DESC") // .param("sort", "name, DESC") cause issues with dao.InvalidDataAccessApiUsageException name must not be null
+		)
+		.andDo(print())
+		.andExpect(status().isOk())
+		.andExpect(jsonPath("page").exists())
+		.andExpect(jsonPath("_embedded.eventList[0]._links.self").exists())
+		.andExpect(jsonPath("_links.self").exists())
+		.andExpect(jsonPath("_links.profile").exists())
+		.andDo(document("query-events"))
+		;
+		
+	}
+
+	private void generateEvent(int index) {
+		// TODO Auto-generated method stub
+		Event event = Event.builder()
+				.name("event " + index)
+				.description("test event")
+				.build();
+		this.eventRepository.save(event);
+	}
 	
 }
