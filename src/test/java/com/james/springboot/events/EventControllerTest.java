@@ -22,44 +22,38 @@ import java.util.stream.IntStream;
 
 import org.hamcrest.Matchers;
 import org.junit.Test;
+
+import org.springframework.hateoas.MediaTypes;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+
+import com.james.springboot.common.BaseControllerTest;
+import org.springframework.beans.factory.annotation.Autowired;
+
+/*
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.servlet.MockMvc;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import com.james.springboot.common.RestDocsConfiguration;
 import org.junit.runner.RunWith;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.hateoas.MediaTypes;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MockMvc;
+*/
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.james.springboot.common.RestDocsConfiguration;
-
-@RunWith(SpringRunner.class)
-@SpringBootTest   // // @WebMvcTest
-@AutoConfigureMockMvc
-@AutoConfigureRestDocs
-@Import(RestDocsConfiguration.class)
-@ActiveProfiles("test")   // will use application-test.properties 
-public class EventControllerTest {
-	@Autowired
-	MockMvc mockMvc; // No webserver required, not unit test DispatcherServlet is involved
-	
-	@Autowired
-	ObjectMapper objectMapper;
-	
+public class EventControllerTest extends BaseControllerTest  {  // inherit BaseControllerTest class annotations
+		
 //	@MockBean
 //	EventRepository eventRepository; // this returns always null 
 	@Autowired
 	EventRepository eventRepository;
 	
-	@Autowired
-	ModelMapper modelMapper;
-	
+
 	@Test
 	public void createEvent() throws Exception {
 

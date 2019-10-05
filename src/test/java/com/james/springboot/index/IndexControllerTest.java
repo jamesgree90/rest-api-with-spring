@@ -5,8 +5,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
+
+/*  // unnecessary imports after refactoring
 import org.springframework.beans.factory.annotation.Autowired;
+import org.junit.runner.RunWith;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,19 +16,13 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-
 import com.james.springboot.common.RestDocsConfiguration;
+*/
 
-@RunWith(SpringRunner.class)
-@SpringBootTest   // // @WebMvcTest
-@AutoConfigureMockMvc
-@AutoConfigureRestDocs
-@Import(RestDocsConfiguration.class)
-@ActiveProfiles("test")   // will use application-test.properties 
-public class IndexControllerTest {
-	
-	@Autowired
-	MockMvc mockMvc;
+
+import com.james.springboot.common.BaseControllerTest;
+
+public class IndexControllerTest extends  BaseControllerTest {
 	
 	@Test
 	public void index() throws Exception{
