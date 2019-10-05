@@ -11,6 +11,7 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.requestF
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -22,6 +23,7 @@ import java.util.stream.IntStream;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -54,6 +56,9 @@ public class EventControllerTest {
 //	EventRepository eventRepository; // this returns always null 
 	@Autowired
 	EventRepository eventRepository;
+	
+	@Autowired
+	ModelMapper modelMapper;
 	
 	@Test
 	public void createEvent() throws Exception {
@@ -260,13 +265,180 @@ public class EventControllerTest {
 		
 	}
 
-	private void generateEvent(int index) {
+	@Test //
+	public void updateEvent() throws Exception{
+		Event event = this.generateEvent(200);
+		// property value setting 
+	/*	EventDto eventDto = EventDto.builder()
+				.basePrice(event.getBasePrice())
+				.description(event.getDescription())
+				.build();
+				*/
+		// Given
+		String eventName = "Different event";
+		EventDto eventDto = modelMapper.map(event, EventDto.class);
+		eventDto.setName(eventName);
+		
+		// When
+		this.mockMvc.perform(put("/api/events/{id}", event.getId())
+ 				.content(objectMapper.writeValueAsString(eventDto))
+				.accept(MediaTypes.HAL_JSON_UTF8)
+				.contentType(MediaType.APPLICATION_JSON_UTF8)
+ 				)
+		        .andDo(print())
+		        .andExpect(status().isOk())
+		        .andExpect(jsonPath("name").value(eventName))
+		        .andExpect(jsonPath("_links.self").exists())
+		;
+
+	}
+	
+	@Test // Incorrect input value update -> should fail
+	public void updateEvent400_Wrong() throws Exception{
+		Event event = this.generateEvent(200);
+
+		// Given
+		EventDto eventDto = modelMapper.map(event, EventDto.class);
+		eventDto.setBasePrice(20000);
+		eventDto.setMaxPrice(1000);
+		// When
+		this.mockMvc.perform(put("/api/events/{id}", event.getId())
+				.content(objectMapper.writeValueAsString(eventDto))
+				.accept(MediaTypes.HAL_JSON_UTF8)
+				.contentType(MediaType.APPLICATION_JSON_UTF8)
+				)
+		        .andDo(print())
+		        .andExpect(status().isBadRequest())
+		//        .andExpect(jsonPath("name").value(eventName))
+		//        .andExpect(jsonPath("_links.self").exists())
+		;
+
+	}
+
+	@Test // Non existing event update -> should fail
+	public void updateEvent404_NonExisting() throws Exception{
+		Event event = this.generateEvent(222);
+
+		// Given
+		EventDto eventDto = modelMapper.map(event, EventDto.class);
+
+		// When
+		this.mockMvc.perform(put("/api/events/123213424")
+				.content(objectMapper.writeValueAsString(eventDto))
+				.accept(MediaTypes.HAL_JSON_UTF8)
+				.contentType(MediaType.APPLICATION_JSON_UTF8)
+				)
+		        .andDo(print())
+		        .andExpect(status().isNotFound())
+		;
+
+	}	
+	
+	
+	@Test // Empty input value update -> should fail
+	public void updateEvent400_Empty() throws Exception{
+		Event event = this.generateEvent(200);
+		// property value setting 
+		EventDto eventDto = new EventDto();
+	
+		// When
+		this.mockMvc.perform(put("/api/events/{id}", event.getId())
+				.content(objectMapper.writeValueAsString(eventDto))
+				.accept(MediaTypes.HAL_JSON_UTF8)
+				.contentType(MediaType.APPLICATION_JSON_UTF8)
+				)
+		        .andDo(print())
+		        .andExpect(status().isBadRequest())
+		;
+
+	}
+	
+	private Event generateEvent(int index) {
 		// TODO Auto-generated method stub
 		Event event = Event.builder()
 				.name("event " + index)
 				.description("test event")
+				.beginEventDateTime(LocalDateTime.of(2019, 9, 16, 10,0,0))
+				.endEventDateTime(LocalDateTime.of(2019,11,16,23,59,59))
+				.beginEnrollmentDateTime(LocalDateTime.of(2019, 9, 16, 10,0,0))				
+				.closeEnrollmentDateTime(LocalDateTime.of(2019, 11, 16, 10,0,0))
+				.basePrice(100)
+				.maxPrice(200)
+				.limitOfEnrollment(100)
+				.location("GangNam")
+				.free(false)
+				.offline(true)
+				.eventStatus(EventStatus.DRAFT)				
 				.build();
-		this.eventRepository.save(event);
+		return this.eventRepository.save(event);
+		// return event;
 	}
+	
+	
+	@Test // retrieve one event 
+	public void getEvents() throws Exception {
+		
+		// Given
+		Event event = this.generateEvent(100);
+		
+		// When
+		this.mockMvc.perform(get("/api/events/{id}",event.getId())
+						.accept(MediaTypes.HAL_JSON_UTF8)
+						.contentType(MediaType.APPLICATION_JSON_UTF8)
+						.content(objectMapper.writeValueAsString(event))
+						)
+						.andExpect(status().isOk())
+						.andExpect(jsonPath("name").exists())
+						.andExpect(jsonPath("id").exists())
+						.andExpect(jsonPath("_links.self").exists())
+						.andExpect(jsonPath("_links.profile").exists())
+						.andDo(document("get-an-event",
+								links(
+								 linkWithRel("self").description("link to self"),
+								 linkWithRel("profile").description("link to profile")
+								),								
+								requestHeaders(
+								   headerWithName(HttpHeaders.ACCEPT).description("accept-header"),
+								   headerWithName(HttpHeaders.CONTENT_TYPE).description("content-type")
+								),
+								 responseFields( //  responseFields( -> strict 
+										   fieldWithPath("id").description(" Event id"),							   
+										   fieldWithPath("name").description("Name of new Event"),
+										   fieldWithPath("description").description("Description of new Event"),
+										   fieldWithPath("beginEnrollmentDateTime").description("data time of begin Enrollment"),
+										   fieldWithPath("closeEnrollmentDateTime").description("data time of close Enrollment"),
+										   fieldWithPath("endEventDateTime").description("data time of Event end"),
+										   fieldWithPath("beginEventDateTime").description("data time of Event begin"),
+										   fieldWithPath("location").description(" event location address"),
+										   fieldWithPath("basePrice").description("base price of event"),
+										   fieldWithPath("maxPrice").description("max price of event"),
+										   fieldWithPath("limitOfEnrollment").description("limit of  Enrollment"),
+										   fieldWithPath("free").description(" check event is free"),
+										   fieldWithPath("offline").description(" check event is offline"),
+										   fieldWithPath("eventStatus").description(" status of event"),							   
+										   fieldWithPath("_links.self.href").description(" self link "),
+										   fieldWithPath("_links.profile.href").description(" profile link") 				   
+								   ),
+								responseHeaders(
+								//   headerWithName(HttpHeaders.LOCATION).description("Location header"),
+								   headerWithName(HttpHeaders.CONTENT_TYPE).description("Content type")
+								)								
+						))
+		;
+
+		// Then 
+		
+	}	
+	
+	@Test // retrieve non existing event and return 404  
+	public void getEvent404() throws Exception {
+
+		// When
+		this.mockMvc.perform(get("/api/events/111111"))
+						.andExpect(status().isNotFound()) 
+		;
+
+	}		
+	
 	
 }

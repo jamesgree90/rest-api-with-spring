@@ -1,7 +1,13 @@
 package com.james.springboot.events;
 
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+
+import java.net.URI;
+import java.util.Optional;
+
+import javax.validation.Valid;
+
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -14,18 +20,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.james.springboot.events.common.ErrorsResource;
-
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
-
-import java.net.URI;
-
-import javax.validation.Valid;
 
 
 @Controller
@@ -48,18 +49,13 @@ public class EventController {
 	@PostMapping
 	public ResponseEntity createEvent(@RequestBody @Valid  EventDto eventDto // Event event
 		,Errors errors	){
-		
 		if(errors.hasErrors()) {
-		//	return ResponseEntity.badRequest().build();
-			return ResponseEntity.badRequest().body(new ErrorsResource(errors));
+			return badRequest(errors);
 		}
-		
 		this.eventValidator.validate(eventDto, errors);
-		
 		if(errors.hasErrors()) {
-			return ResponseEntity.badRequest().body(new ErrorsResource(errors));
-		}		
-		
+			return badRequest(errors);		
+		}
 		Event event =	modelMapper.map(eventDto, Event.class);
 		event.update(); // biz logic --> Service class role 
 	    Event newEvent = this.eventRepository.save(event);
@@ -89,6 +85,58 @@ public class EventController {
 
 		return ResponseEntity.ok(pagedResources);
 	}
+	
+	@GetMapping(value="/{id}")
+	public ResponseEntity getEvent(@PathVariable Integer id ){
+		Optional<Event> optionalEvent = this.eventRepository.findById(id); //   .getOne(id); caused issue on Hibernate
+		
+		if(!optionalEvent.isPresent()) {
+			return ResponseEntity.notFound().build();
+		}
+		
+		Event event = optionalEvent.get();
+		EventResource eventResource = new EventResource(event);
+		eventResource.add(new Link("/docs/index.html#resources-events-get").withRel("profile"));
+		return ResponseEntity.ok(eventResource);
+	}
+	
+	@PutMapping(value="/{id}")
+	public ResponseEntity updateEvent(@PathVariable Integer id, 
+									  @RequestBody @Valid EventDto eventDto, 
+									  Errors errors ){
+		Optional<Event> optionalEvent = this.eventRepository.findById(id);
+		
+		if(!optionalEvent.isPresent()){
+			return ResponseEntity.notFound().build();
+		}
+				
+		if(errors.hasErrors()) {
+			return badRequest(errors);
+		}
+		
+		this.eventValidator.validate(eventDto, errors);
+		
+		if(errors.hasErrors()) {		
+			return badRequest(errors);		
+		}
+		
+
+		Event existingEvent = optionalEvent.get();
+		this.modelMapper.map(eventDto, existingEvent );
+		
+		Event updatedEvent =this.eventRepository.save(existingEvent );
+
+		EventResource eventResource = new EventResource(updatedEvent);
+		
+		eventResource.add(new Link("/docs/index.html#resources-events-update").withRel("profile"));
+		
+		return ResponseEntity.ok(eventResource);
+	}
+
+	private ResponseEntity badRequest(Errors errors) {
+			return ResponseEntity.badRequest().body(new ErrorsResource(errors));
+	}
+	
 	
 	
 	
