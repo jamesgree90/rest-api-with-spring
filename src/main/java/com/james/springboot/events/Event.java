@@ -7,6 +7,9 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+
+import com.james.springboot.accounts.Account;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -35,6 +38,9 @@ public class Event {
 	private boolean free;
 	@Enumerated(EnumType.STRING)
 	private EventStatus eventStatus = EventStatus.DRAFT;
+	
+	@ManyToOne
+	private Account manager;
 	
 	public void update() {
 		// TODO Auto-generated method stub
