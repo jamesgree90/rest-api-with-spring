@@ -13,11 +13,7 @@ public class RestApiWithSpring2Application {
 		SpringApplication.run(RestApiWithSpring2Application.class, args);
 	}
 
-	@Bean
-	public ModelMapper modelMapper(){  // Bean registration
-		return new ModelMapper();
-	}
-	
+
 	
 	
 // @SpringBootApplication	

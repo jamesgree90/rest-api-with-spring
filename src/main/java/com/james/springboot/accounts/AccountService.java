@@ -24,7 +24,7 @@ public class AccountService implements UserDetailsService {
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		// TODO Auto-generated method stub
-		Account account = // accountRepository.findbyEmail(username) //
+		Account account = // accountRepository.findbyEmail(username) //findby -> caused issue, findBy -> correct 
 				accountRepository.findByEmail(username)
 				.orElseThrow(()-> new UsernameNotFoundException(username));
 
