@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -49,13 +50,22 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		
 	}
 	
-/*	@Override
+ 	@Override
 	public void configure(HttpSecurity http) throws Exception {
-		http.authorizeRequests()
-			.mvcMatchers("/docs/index.html").anonymous()
-			.requestMatchers(PathRequest.toStaticResources().atCommonLocations())
+		http
+			.anonymous()
+				.and()
+			.formLogin()
+				.and()
+			.authorizeRequests()
+		//	.mvcMatchers("/docs/index.html").anonymous()
+				.mvcMatchers(HttpMethod.GET, "/api/**").authenticated()
+				.requestMatchers(PathRequest.toStaticResources().atCommonLocations()).anonymous()
+			// missing  .anonymous() causes issue 
+		//	org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'springSecurityFilterChain' defined in class path resource [org/springframework/security/config/annotation/web/configuration/WebSecurityConfiguration.class]: Bean instantiation via factory method failed; nested exception is org.springframework.beans.BeanInstantiationException: Failed to instantiate [javax.servlet.Filter]: Factory method 'springSecurityFilterChain' threw exception; nested exception is java.lang.IllegalStateException: An incomplete mapping was found for [org.springframework.boot.autoconfigure.security.servlet.StaticResourceRequest$StaticResourceRequestMatcher@5cf7474f]. Try completing it with something like requestUrls().<something>.hasRole('USER')
+			.anyRequest().authenticated()
 		;
 		
-	}*/
+	} 
 		
 }
