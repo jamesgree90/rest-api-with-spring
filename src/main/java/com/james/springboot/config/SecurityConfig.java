@@ -51,7 +51,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	}
 	
  	@Override
-	public void configure(HttpSecurity http) throws Exception {
+	public void configure(HttpSecurity http) throws Exception { // defines which URL paths should be secured in our application.
 		http
 			.anonymous()
 				.and()

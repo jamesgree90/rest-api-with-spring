@@ -28,7 +28,7 @@ public class AppConfig {
 	public PasswordEncoder passwordEncoder(){
 		return PasswordEncoderFactories.createDelegatingPasswordEncoder();
 	}
-	
+	/*
 	@Bean
 	public ApplicationRunner applicationRunner(){ // This will generate one user when Spring boot app runs
 		return new ApplicationRunner(){
@@ -56,4 +56,6 @@ public class AppConfig {
 
 		};
 	}
+	
+	*/
 }
