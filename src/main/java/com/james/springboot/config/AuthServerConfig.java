@@ -12,6 +12,7 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Aut
 import org.springframework.security.oauth2.provider.token.TokenStore;
 
 import com.james.springboot.accounts.AccountService;
+import com.james.springboot.events.common.AppProperties;
 
 @Configuration
 @EnableAuthorizationServer
@@ -29,6 +30,9 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
 	@Autowired
 	AccountService accountService;
 	
+	@Autowired
+	AppProperties appProperties;
+	
 	@Override
 	public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
 		// TODO Auto-generated method stub
@@ -45,10 +49,10 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
 		// client id assignment
 		// clients.jdbc(dataSource) --> real storage 
 		clients.inMemory()   // just simple test case 
-			.withClient("myApp")
+			.withClient(appProperties.getClientId())  
 			.authorizedGrantTypes("password","refresh_token")
 			.scopes("read", "write")
-			.secret(this.passwordEncoder.encode("pass"))
+			.secret(this.passwordEncoder.encode( appProperties.getClientSecret()))
 			.accessTokenValiditySeconds(10 * 60)
 			.refreshTokenValiditySeconds( 6 * 10 * 60)
 			;

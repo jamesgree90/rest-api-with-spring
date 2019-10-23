@@ -2,6 +2,7 @@ package com.james.springboot.accounts;
 
 import java.util.Set;
 
+import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -23,6 +24,8 @@ import lombok.Setter;
 public class Account {
 	@Id @GeneratedValue
 	private Integer id;
+	
+	@Column(unique = true) // this will force unique value on email column
 	private String email;
 	private String password;
 	

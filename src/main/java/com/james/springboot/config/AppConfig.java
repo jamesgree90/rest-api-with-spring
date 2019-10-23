@@ -15,6 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import com.james.springboot.accounts.Account;
 import com.james.springboot.accounts.AccountRole;
 import com.james.springboot.accounts.AccountService;
+import com.james.springboot.events.common.AppProperties;
 
 @Configuration
 public class AppConfig {
@@ -28,7 +29,7 @@ public class AppConfig {
 	public PasswordEncoder passwordEncoder(){
 		return PasswordEncoderFactories.createDelegatingPasswordEncoder();
 	}
-	/*
+
 	@Bean
 	public ApplicationRunner applicationRunner(){ // This will generate one user when Spring boot app runs
 		return new ApplicationRunner(){
@@ -36,26 +37,40 @@ public class AppConfig {
 			@Autowired
 			AccountService accountService;
 			
+			@Autowired
+			AppProperties appProperties;
+			
 			@Override
 			public void run(ApplicationArguments args) throws Exception {
-				String userEmail = "james@gmail.com";
+				String adminEmail = appProperties.getAdminUsername(); // "admin@email.com";
 				
-				Set<AccountRole> roleSet = new HashSet<AccountRole>();
-				roleSet.add(AccountRole.ADMIN);
-				roleSet.add(AccountRole.USER);
-				String password = "pswd";
-				Account account = Account.builder()
-						.email(userEmail)
-						.password(password)
-						.roles(roleSet)
+				Set<AccountRole> adminRoleSet = new HashSet<AccountRole>();
+				adminRoleSet.add(AccountRole.ADMIN);
+				adminRoleSet.add(AccountRole.USER);
+				String adminPassword = appProperties.getAdminPassword();//         "admin";
+				Account admin = Account.builder()
+						.email(adminEmail)
+						.password(adminPassword)
+						.roles(adminRoleSet)
 						.build()
 						;
-				accountService.saveAccount(account);
+				accountService.saveAccount(admin);
+
+				Set<AccountRole> userRoleSet = new HashSet<AccountRole>();
+				userRoleSet.add(AccountRole.USER);
+				
+				Account user = Account.builder()
+						.email( appProperties.getUserUsername()) //     "user@email.com")
+						.password( appProperties.getUserPassword())  //     "user")
+						.roles(userRoleSet)
+						.build()
+						;
+				accountService.saveAccount(user);				
+				
 				
 			}
 
 		};
 	}
-	
-	*/
+
 }
